@@ -1,0 +1,9 @@
+.grid-container{
+    display: grid;
+    gap: 1%;
+    grid-template-columns: auto auto auto;
+}
+
+.item-2{
+    grid-column-end: span 2;
+}

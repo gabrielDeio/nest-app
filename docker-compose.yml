@@ -1,0 +1,37 @@
+version: '3.3'
+
+services: 
+  pgsql: 
+    image: postgres:alpine
+    ports:
+      - '5432:5432'
+    container_name: 'pgsql'
+    restart: always
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: gabriel
+      POSTGRES_PASSWORD: 12345
+    
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  nest-app:
+    build:
+      context : .
+      dockerfile : Dockerfile.nest-app
+    ports:
+      - 3000:3000
+  
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.react-app
+    ports:
+    - 5173:5173
+    
+volumes:
+  pg-data:
