@@ -20,6 +20,7 @@ export class CompanyService {
         }
         else{
             this.companyRepository.save(newCompany);
+            
         }
     }
 
