@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { Company } from "./company.entity";
 import { CreateCompanyDto, UpdateCompanyDto } from "./dto/create-company.dto";
@@ -8,31 +8,53 @@ import { CreateCompanyDto, UpdateCompanyDto } from "./dto/create-company.dto";
 @Injectable()
 export class CompanyService {
     constructor(
-        @Inject('COMPANY_REPOSITORY') private readonly companyRepository : Repository<Company>
-    ){}
+        @Inject('COMPANY_REPOSITORY') private readonly companyRepository: Repository<Company>
+    ) { }
 
-    create(company : CreateCompanyDto){
+    create(company: CreateCompanyDto) {
         const newCompany = this.companyRepository.create(company);
-        return this.companyRepository.save(newCompany);
+        const response = this.findCompanyByCnpj(newCompany.cnpj);
+
+        if(response){
+            throw new HttpException('Company already exists', HttpStatus.BAD_REQUEST);
+        }
+        else{
+            this.companyRepository.save(newCompany);
+            
+        }
     }
 
-    findAllCompanies(){
+    findAll() {
         return this.companyRepository.find();
     }
 
-    findCompanyByCnpj(cnpj : string) {
-        return this.companyRepository.findOne({where : { cnpj : cnpj}});
+    async findCompanyByCnpj(cnpj: string) {
+        const company  = await this.companyRepository.findOne({ where: { cnpj: cnpj } });
+        if(company) return company;
+        else{
+            throw new HttpException('Company not found', HttpStatus.NOT_FOUND);
+        }
+         
     }
 
-    async updateCompany(company : UpdateCompanyDto , cnpj : string){
-        const companyToUpdate = await this.companyRepository.findOne({where : {cnpj : cnpj}});
-
-        return this.companyRepository.update(companyToUpdate.id, company);
+    async update(company: UpdateCompanyDto, cnpj: string) {
+        const companyToUpdate = await this.companyRepository.findOne({ where: { cnpj: cnpj } });
+        if(companyToUpdate){
+            this.companyRepository.update(companyToUpdate.id, company);
+        }
+        else{
+            throw new HttpException('Company not found', HttpStatus.NOT_FOUND);
+        } 
     }
 
-    async deleteCompany(cnpj : string){
-        const companyToDelete = await this.companyRepository.findOne({where : {cnpj : cnpj}});
+    async delete(cnpj: string) {
+        const companyToDelete = await this.companyRepository.findOne({ where: { cnpj: cnpj } });
 
-        return this.companyRepository.delete(companyToDelete.id);
+        if(companyToDelete){
+            this.companyRepository.delete(companyToDelete.id);
+        }
+        else{
+            throw new HttpException('Company not found', HttpStatus.NOT_FOUND);
+        } 
     }
 }
