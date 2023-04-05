@@ -31,6 +31,6 @@ export class CompanyController {
 
     @Delete(':cnpj')
     async deleteCompany(@Param('cnpj') cnpj: string) {
-        this.companyService.delete(cnpj);
+        return this.companyService.delete(cnpj);
     }
 }
